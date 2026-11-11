@@ -603,42 +603,83 @@
     </div>
   </footer>
 
+
+  <!-- Bibliothèque EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
   <script>
-    // Formulaire statique - simulation d'envoi
-    const form = document.getElementById('contactForm');
-    const feedback = document.getElementById('formFeedback');
+    // Initialisation EmailJS
+    emailjs.init({
+      publicKey: "BsniCLGxhKW97-jFk"
+    });
 
-    form.addEventListener('submit', function(e) {
+    const form = document.getElementById("contactForm");
+    const feedback = document.getElementById("formFeedback");
+
+    form.addEventListener("submit", async function(e) {
       e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const message = document.getElementById('message').value.trim();
 
-      if (!name || !email || !message) {
-        feedback.style.display = 'block';
-        feedback.style.backgroundColor = '#fee2e2';
-        feedback.style.color = '#991b1b';
-        feedback.innerHTML = '⚠️ Tous les champs sont requis.';
+      const button = form.querySelector('button[type="submit"]');
+
+      const templateParams = {
+        from_name: document.getElementById("name").value.trim(),
+        reply_to: document.getElementById("email").value.trim(),
+        message: document.getElementById("message").value.trim()
+      };
+
+      // Vérification des champs
+      if (!templateParams.from_name ||
+          !templateParams.reply_to ||
+          !templateParams.message) {
+        feedback.style.display = "block";
+        feedback.style.backgroundColor = "#fee2e2";
+        feedback.style.color = "#991b1b";
+        feedback.textContent = "Tous les champs sont requis.";
         return;
       }
-      if (!email.includes('@') || !email.includes('.')) {
-        feedback.style.display = 'block';
-        feedback.style.backgroundColor = '#fee2e2';
-        feedback.style.color = '#991b1b';
-        feedback.innerHTML = '📧 Veuillez entrer une adresse email valide.';
+
+      // Vérification de l'adresse email
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(templateParams.reply_to)) {
+        feedback.style.display = "block";
+        feedback.style.backgroundColor = "#fee2e2";
+        feedback.style.color = "#991b1b";
+        feedback.textContent = "Veuillez entrer une adresse email valide.";
         return;
       }
 
-      // Simulation d'envoi (pas de backend)
-      feedback.style.display = 'block';
-      feedback.style.backgroundColor = '#dcfce7';
-      feedback.style.color = '#166534';
-      feedback.innerHTML = `✅ Merci ${name} ! Votre message a bien été reçu. Je vous répondrai à ${email}.`;
-      form.reset();
-      setTimeout(() => {
-        feedback.style.display = 'none';
-      }, 4000);
+      button.disabled = true;
+      button.textContent = "Envoi en cours...";
+
+      try {
+        await emailjs.send(
+          "service_sakt0om",
+          "template_ajpz2k7",
+          templateParams
+        );
+
+        feedback.style.display = "block";
+        feedback.style.backgroundColor = "#dcfce7";
+        feedback.style.color = "#166534";
+        feedback.textContent = "Votre message a été envoyé avec succès !";
+
+        form.reset();
+
+      } catch (error) {
+        console.error("Erreur EmailJS :", error);
+
+        feedback.style.display = "block";
+        feedback.style.backgroundColor = "#fee2e2";
+        feedback.style.color = "#991b1b";
+        feedback.textContent = "Échec de l'envoi. Veuillez réessayer.";
+
+      } finally {
+        button.disabled = false;
+        button.innerHTML = 'Envoyer <i class="fas fa-paper-plane"></i>';
+      }
     });
   </script>
+</body>
+</html>
+
 </body>
 </html>
